@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LSPD — Los Santos Police Department</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#06080d;--bg2:#090c14;--s1:#0c1020;--s2:#111828;--s3:#1a2438;--s4:#1e2a40;
+  --blue:#1d6fdb;--blue2:#4d9fff;--blue3:#80bfff;
+  --gold:#c8a84b;--gold2:#e8c870;
+  --tx:#d8e8ff;--tx2:#8aa0c0;--tx3:#4a6080;
+  --red:#e04040;--green:#30c870;
+  --border:#1a2840;--border2:#243550;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 20% 20%,rgba(29,111,219,.08) 0%,transparent 60%),radial-gradient(ellipse 40% 60% at 80% 80%,rgba(29,111,219,.05) 0%,transparent 60%),repeating-linear-gradient(0deg,transparent,transparent 40px,rgba(255,255,255,.01) 40px,rgba(255,255,255,.01) 41px),repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(255,255,255,.01) 40px,rgba(255,255,255,.01) 41px);pointer-events:none;z-index:0;}
+
+/* NAV */
+.topnav{position:fixed;top:0;left:0;right:0;z-index:100;height:60px;background:rgba(6,8,13,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--border2);display:flex;align-items:center;padding:0 40px;gap:0;}
+.topnav::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--blue2),var(--gold),var(--blue2),transparent);opacity:.4;}
+.nav-brand{display:flex;align-items:center;gap:14px;margin-right:auto;text-decoration:none;}
+.nav-seal{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#0a3a7a);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:900;color:var(--gold);letter-spacing:1px;box-shadow:0 0 0 3px rgba(200,168,75,.15);flex-shrink:0;}
+.nav-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:#fff;letter-spacing:2px;line-height:1;}
+.nav-sub{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--tx3);letter-spacing:2px;margin-top:2px;}
+.nav-links{display:flex;align-items:center;gap:2px;}
+.nav-link{padding:8px 13px;font-size:13px;font-weight:600;color:var(--tx2);text-decoration:none;border-radius:4px;transition:color .15s,background .15s;cursor:pointer;border:none;background:transparent;}
+.nav-link:hover{color:var(--tx);background:var(--s2);}
+.nav-link.active{color:var(--blue2);}
+.nav-mdt{margin-left:14px;padding:8px 18px;background:var(--blue);border:1px solid var(--blue2);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:2px;border-radius:4px;cursor:pointer;transition:background .15s;display:flex;align-items:center;gap:7px;}
+.nav-mdt:hover{background:var(--blue2);}
+
+/* HERO */
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:80px 40px 60px;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 30%,rgba(29,111,219,.1) 0%,transparent 70%);pointer-events:none;}
+.hero-lines{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+.hero-lines::before,.hero-lines::after{content:'';position:absolute;width:1px;height:200%;background:linear-gradient(180deg,transparent,rgba(77,159,255,.12),transparent);transform:rotate(15deg);transform-origin:top center;}
+.hero-lines::before{left:20%;top:-50%;}
+.hero-lines::after{right:20%;top:-50%;}
+
+.hero-badge{width:110px;height:110px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#082060);border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;flex-direction:column;box-shadow:0 0 0 8px rgba(200,168,75,.1),0 0 60px rgba(29,111,219,.25);margin:0 auto 28px;animation:badgePulse 4s ease-in-out infinite;}
+@keyframes badgePulse{0%,100%{box-shadow:0 0 0 8px rgba(200,168,75,.1),0 0 60px rgba(29,111,219,.25)}50%{box-shadow:0 0 0 14px rgba(200,168,75,.14),0 0 80px rgba(29,111,219,.38)}}
+.hero-badge-star{font-size:38px;line-height:1;}
+.hero-badge-lbl{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:900;color:var(--gold);letter-spacing:3px;margin-top:2px;}
+
+.hero-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--blue2);letter-spacing:4px;margin-bottom:12px;opacity:0;animation:fadeUp .6s .2s forwards;}
+.hero-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(40px,7vw,78px);font-weight:900;color:#fff;letter-spacing:3px;line-height:1;margin-bottom:6px;opacity:0;animation:fadeUp .6s .35s forwards;}
+.hero-title span{color:var(--blue2);}
+.hero-sub{font-family:'Barlow Condensed',sans-serif;font-size:clamp(14px,2vw,22px);font-weight:600;color:var(--gold2);letter-spacing:6px;margin-bottom:18px;opacity:0;animation:fadeUp .6s .45s forwards;}
+.hero-desc{font-size:15px;color:var(--tx2);max-width:500px;margin:0 auto 40px;line-height:1.7;opacity:0;animation:fadeUp .6s .55s forwards;}
+
+/* THE MDT TILE */
+.mdt-tile{position:relative;width:310px;margin:0 auto 18px;background:linear-gradient(135deg,rgba(29,111,219,.18),rgba(13,16,32,.85));border:2px solid var(--blue2);border-radius:8px;padding:26px 30px;cursor:pointer;text-align:left;display:block;overflow:hidden;transition:transform .18s,box-shadow .18s,border-color .18s;opacity:0;animation:fadeUp .6s .65s forwards;}
+.mdt-tile::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(77,159,255,.08),transparent);opacity:0;transition:opacity .18s;}
+.mdt-tile:hover{transform:translateY(-5px);border-color:var(--blue3);box-shadow:0 16px 50px rgba(29,111,219,.3),0 0 0 1px rgba(77,159,255,.15);}
+.mdt-tile:hover::before{opacity:1;}
+.mdt-tile:active{transform:translateY(-2px);}
+.tile-icon{font-size:30px;display:block;margin-bottom:9px;}
+.tile-label{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:#fff;letter-spacing:3px;display:block;margin-bottom:3px;}
+.tile-hint{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--blue2);letter-spacing:1px;}
+.tile-arr{position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:22px;color:var(--blue2);opacity:.5;transition:opacity .18s,right .18s;}
+.mdt-tile:hover .tile-arr{opacity:1;right:13px;}
+
+.hero-online{display:flex;align-items:center;justify-content:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--tx3);opacity:0;animation:fadeUp .6s .75s forwards;}
+.dot-online{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.scroll-hint{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--tx3);letter-spacing:2px;animation:float 2.5s ease-in-out infinite;cursor:pointer;text-decoration:none;}
+@keyframes float{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-6px)}}
+
+/* SECTIONS */
+section{position:relative;z-index:1;padding:80px 0;}
+.container{max-width:1160px;margin:0 auto;padding:0 40px;}
+.sec-hdr{text-align:center;margin-bottom:50px;}
+.sec-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--blue2);letter-spacing:3px;padding:4px 12px;border:1px solid rgba(77,159,255,.3);border-radius:20px;margin-bottom:12px;background:rgba(77,159,255,.06);}
+.sec-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(26px,4vw,42px);font-weight:900;color:#fff;letter-spacing:2px;margin-bottom:8px;}
+.sec-title span{color:var(--blue2);}
+.sec-desc{font-size:15px;color:var(--tx2);max-width:520px;margin:0 auto;line-height:1.7;}
+
+/* NEWS */
+#novinky{background:var(--bg2);}
+.news-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.news-card{background:var(--s1);border:1px solid var(--border);border-left:3px solid var(--blue2);border-radius:6px;padding:22px 24px;transition:border-left-color .15s,transform .15s;}
+.news-card:hover{border-left-color:var(--gold2);transform:translateY(-2px);}
+.ntag{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;padding:2px 8px;border-radius:3px;margin-bottom:9px;}
+.nt-info{background:rgba(77,159,255,.15);color:var(--blue2);}
+.nt-warn{background:rgba(224,64,64,.12);color:#ff8080;}
+.nt-op{background:rgba(200,168,75,.12);color:var(--gold2);}
+.nt-upd{background:rgba(48,200,112,.12);color:#80ffb8;}
+.news-title{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:800;color:#fff;margin-bottom:7px;line-height:1.2;}
+.news-body{font-size:13px;color:var(--tx2);line-height:1.6;margin-bottom:11px;}
+.news-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--tx3);display:flex;gap:14px;}
+
+/* QUICK TILES */
+#portal{background:var(--bg);}
+.tiles-g{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.ptile{background:var(--s1);border:1px solid var(--border);border-radius:6px;padding:26px 22px;cursor:pointer;text-decoration:none;display:block;transition:border-color .15s,background .15s,transform .15s;position:relative;overflow:hidden;}
+.ptile::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--blue2);transform:scaleX(0);transform-origin:left;transition:transform .2s;}
+.ptile:hover{border-color:var(--blue2);background:var(--s2);transform:translateY(-3px);}
+.ptile:hover::after{transform:scaleX(1);}
+.ptile.mdt-p{background:linear-gradient(135deg,rgba(29,111,219,.12),var(--s1));border-color:var(--blue2);border-width:2px;}
+.ptile.mdt-p:hover{background:linear-gradient(135deg,rgba(29,111,219,.22),var(--s2));}
+.pt-ico{font-size:28px;margin-bottom:11px;display:block;}
+.pt-t{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;color:#fff;margin-bottom:3px;letter-spacing:1px;}
+.pt-d{font-size:12px;color:var(--tx2);line-height:1.5;}
+
+/* RANKS */
+#hodnosti{background:var(--bg2);}
+.rtable-w{background:var(--s1);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.rtable{width:100%;border-collapse:collapse;}
+.rtable th{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;color:var(--tx2);letter-spacing:2px;text-transform:uppercase;padding:11px 18px;text-align:left;border-bottom:1px solid var(--border2);background:var(--s2);}
+.rtable td{padding:13px 18px;border-bottom:1px solid var(--border);font-size:14px;color:var(--tx);vertical-align:middle;}
+.rtable tr:last-child td{border-bottom:none;}
+.rtable tr:hover td{background:var(--s2);}
+.rb{display:inline-flex;align-items:center;gap:8px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:.5px;}
+.rn{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--blue2);background:rgba(77,159,255,.1);border:1px solid rgba(77,159,255,.2);padding:2px 7px;border-radius:3px;}
+.rd{font-size:12px;color:var(--tx2);}
+.r0{color:var(--gold2);}
+.r1{color:#c8c8f0;}
+.r2{color:var(--tx);}
+.r3{color:var(--tx2);}
+
+/* LEADERSHIP */
+#vedeni{background:var(--bg);}
+.ldiv{margin-bottom:36px;}
+.ldiv-hdr{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;color:var(--blue2);letter-spacing:4px;text-transform:uppercase;padding-bottom:9px;border-bottom:1px solid var(--border2);margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+.ldiv-hdr::before{content:'';width:3px;height:14px;background:var(--blue2);border-radius:2px;flex-shrink:0;}
+.orow{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;}
+.ocard{background:var(--s1);border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:border-color .15s,transform .15s;}
+.ocard:hover{border-color:var(--blue2);transform:translateY(-4px);}
+.ocard.cmd{border-color:var(--gold);border-width:2px;}
+.ocard.cmd:hover{border-color:var(--gold2);box-shadow:0 8px 28px rgba(200,168,75,.12);}
+.ophoto{width:100%;height:130px;background:linear-gradient(135deg,var(--s2),var(--s3));display:flex;align-items:center;justify-content:center;font-size:48px;position:relative;border-bottom:1px solid var(--border);}
+.ophoto::after{content:'';position:absolute;bottom:0;left:0;right:0;height:36px;background:linear-gradient(transparent,var(--s1));}
+.ophoto.gold-bg{background:linear-gradient(135deg,rgba(200,168,75,.12),var(--s3));}
+.oinfo{padding:12px 14px;}
+.oname{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:#fff;line-height:1.1;margin-bottom:2px;}
+.orank{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--blue2);letter-spacing:1px;text-transform:uppercase;margin-bottom:7px;display:block;}
+.orank.gold{color:var(--gold2);}
+.ometa{display:flex;flex-direction:column;gap:3px;border-top:1px solid var(--border);padding-top:7px;}
+.omr{display:flex;justify-content:space-between;align-items:center;}
+.omk{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--tx3);font-weight:600;letter-spacing:1px;}
+.omv{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--tx);font-weight:600;}
+.omv.blue{color:var(--blue2);}
+.omv.gold{color:var(--gold2);}
+
+/* DOCS */
+#dokumenty{background:var(--bg2);}
+.docs-g{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.doc{background:var(--s1);border:1px solid var(--border);border-radius:6px;padding:16px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s,background .15s;text-decoration:none;}
+.doc:hover{border-color:var(--blue2);background:var(--s2);}
+.doc-ico{font-size:22px;flex-shrink:0;width:32px;text-align:center;}
+.doc-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:#fff;margin-bottom:2px;}
+.doc-info{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--tx3);}
+.dbadge{margin-left:auto;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;flex-shrink:0;letter-spacing:1px;}
+.db-n{background:rgba(48,200,112,.15);color:#80ffb8;border:1px solid rgba(48,200,112,.3);}
+.db-p{background:rgba(224,64,64,.1);color:#ff9090;border:1px solid rgba(224,64,64,.2);}
+.db-d{background:rgba(77,159,255,.1);color:var(--blue2);border:1px solid rgba(77,159,255,.2);}
+
+/* FOOTER */
+footer{background:var(--s1);border-top:1px solid var(--border2);padding:28px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;}
+.foot-l{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--tx2);letter-spacing:2px;}
+.foot-r{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--tx3);text-align:right;line-height:1.9;}
+
+/* MDT MODAL */
+#mdt-modal{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.82);backdrop-filter:blur(8px);align-items:center;justify-content:center;}
+#mdt-modal.open{display:flex;}
+.mbox{background:var(--s1);border:2px solid var(--blue2);border-radius:8px;padding:38px;width:420px;max-width:90vw;box-shadow:0 0 80px rgba(29,111,219,.28);position:relative;animation:mIn .22s ease;}
+@keyframes mIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.mbox::before{content:'';position:absolute;top:0;left:10%;right:10%;height:2px;background:linear-gradient(90deg,transparent,var(--blue2),transparent);}
+.mclose{position:absolute;top:13px;right:13px;width:27px;height:27px;border-radius:50%;background:var(--s2);border:1px solid var(--border2);color:var(--tx2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s;}
+.mclose:hover{background:rgba(224,64,64,.2);color:#ff8080;}
+.mt{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:#fff;letter-spacing:3px;text-align:center;margin-bottom:4px;}
+.ms{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--tx3);letter-spacing:2px;text-align:center;margin-bottom:22px;}
+.mdept{display:flex;border:1px solid var(--border2);border-radius:4px;overflow:hidden;margin-bottom:16px;}
+.mdept button{flex:1;padding:9px;border:none;background:transparent;color:var(--tx2);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:background .1s,color .1s;}
+.mdl{background:rgba(29,111,219,.28)!important;color:var(--blue2)!important;}
+.mds{background:rgba(122,79,0,.35)!important;color:#e09020!important;}
+.mf{margin-bottom:12px;}
+.ml{display:block;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;color:var(--tx2);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;}
+.mi{width:100%;background:var(--s2);border:1px solid var(--border2);color:var(--tx);font-family:'Barlow',sans-serif;font-size:14px;font-weight:500;padding:10px 12px;outline:none;border-radius:4px;transition:border-color .15s;}
+.mi:focus{border-color:var(--blue2);box-shadow:0 0 0 3px rgba(77,159,255,.15);}
+.mi::placeholder{color:var(--tx3);}
+.mbtn{width:100%;padding:12px;background:var(--blue);border:1px solid var(--blue2);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;letter-spacing:3px;cursor:pointer;border-radius:4px;transition:background .15s;margin-top:2px;}
+.mbtn:hover{background:var(--blue2);}
+.merr{text-align:center;font-size:12px;font-weight:600;color:#ff8080;margin-top:8px;min-height:16px;}
+.mhint{text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--tx3);margin-top:13px;border-top:1px solid var(--border);padding-top:11px;line-height:1.9;}
+.mhint b{color:var(--blue2);}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a class="nav-brand" href="#">
+    <div class="nav-seal">LSPD</div>
+    <div><div class="nav-title">LOS SANTOS P.D.</div><div class="nav-sub">LAW ENFORCEMENT PORTAL</div></div>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="#novinky">Novinky</a>
+    <a class="nav-link" href="#hodnosti">Hodnosti</a>
+    <a class="nav-link" href="#vedeni">Vedení</a>
+    <a class="nav-link" href="#dokumenty">Dokumenty</a>
+  </div>
+  <button class="nav-mdt" onclick="openMDT()">📱 MDT — Data Terminal</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-lines"></div>
+  <div class="hero-badge"><span class="hero-badge-star">⭐</span><span class="hero-badge-lbl">LSPD</span></div>
+  <div class="hero-eyebrow">Los Santos Police Department</div>
+  <h1 class="hero-title">PROTECT &amp; <span>SERVE</span></h1>
+  <div class="hero-sub">EST. 1992 · LOS SANTOS</div>
+  <p class="hero-desc">Interní portál Oddělení policie Los Santos. Přístup k MDT, dokumentům, přehledu hodností a aktuálním oznámením.</p>
+
+  <button class="mdt-tile" onclick="openMDT()">
+    <span class="tile-icon">📱</span>
+    <span class="tile-label">MY DATA TERMINAL</span>
+    <span class="tile-hint">PŘÍSTUP DO MDT SYSTÉMU</span>
+    <span class="tile-arr">›</span>
+  </button>
+
+  <div class="hero-online"><span class="dot-online"></span>MDT systém online · 8 aktivních hlídek</div>
+  <a class="scroll-hint" href="#novinky"><span>PROCHÁZET PORTÁL</span><span style="font-size:18px">↓</span></a>
+</section>
+
+<!-- NOVINKY -->
+<section id="novinky">
+  <div class="container">
+    <div class="sec-hdr">
+      <div class="sec-tag">📰 AKTUALIZOVÁNO 26. 02. 2026</div>
+      <h2 class="sec-title">Novinky &amp; <span>Oznámení</span></h2>
+      <p class="sec-desc">Aktuální informace, operační briefingy a departmentální oznámení pro všechny důstojníky.</p>
+    </div>
+    <div class="news-grid">
+      <div class="news-card">
+        <span class="ntag nt-warn">⚠ OPERAČNÍ ALERT</span>
+        <div class="news-title">Zvýšená aktivita Ballas na Strawberry</div>
+        <div class="news-body">Hlídky v oblasti Grove St. a Strawberry Ave. hlásí zvýšenou aktivitu členů gangu Ballas. Všechny hlídky mají být ve zvýšené pohotovosti. Taktika ve dvojicích.</div>
+        <div class="news-meta"><span>📅 26. 02. 2026</span><span>✍ Lt. Martinez</span></div>
+      </div>
+      <div class="news-card">
+        <span class="ntag nt-info">ℹ OZNÁMENÍ</span>
+        <div class="news-title">Nový protokol pro dopravní kontroly</div>
+        <div class="news-body">Od 1. 3. 2026 platí aktualizovaný SOP pro dopravní kontroly. Povinné použití MDT pro každou kontrolu SPZ. Školicí materiály jsou v sekci Dokumenty.</div>
+        <div class="news-meta"><span>📅 24. 02. 2026</span><span>✍ Capt. Johnson</span></div>
+      </div>
+      <div class="news-card">
+        <span class="ntag nt-op">🎖 POVÝŠENÍ</span>
+        <div class="news-title">Povýšení — únor 2026</div>
+        <div class="news-body">Gratulujeme: Off. Sarah Mitchell → Corporal, Off. James Okafor → Senior Officer. Slavnostní ceremoniál proběhne 28. 2. v 18:00 na hlavní stanici.</div>
+        <div class="news-meta"><span>📅 22. 02. 2026</span><span>✍ Chief Reynolds</span></div>
+      </div>
+      <div class="news-card">
+        <span class="ntag nt-upd">✔ AKTUALIZACE</span>
+        <div class="news-title">MDT v2.4 — nová sekce zákonů</div>
+        <div class="news-body">MDT systém aktualizován. Přibyla kompletní sekce Californského trestního zákoníku v češtině. Záznamy nyní obsahují odkaz na příslušný paragraf.</div>
+        <div class="news-meta"><span>📅 20. 02. 2026</span><span>✍ IT Oddělení</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PORTAL TILES -->
+<section id="portal">
+  <div class="container">
+    <div class="sec-hdr">
+      <div class="sec-tag">⚡ RYCHLÝ PŘÍSTUP</div>
+      <h2 class="sec-title">Portál <span>LSPD</span></h2>
+    </div>
+    <div class="tiles-g">
+      <button class="ptile mdt-p" onclick="openMDT()">
+        <span class="pt-ico">📱</span>
+        <div class="pt-t">My Data Terminal</div>
+        <div class="pt-d">Databáze osob, vozidel, záznamy, incidenty a trestní zákoník.</div>
+      </button>
+      <a class="ptile" href="#dokumenty">
+        <span class="pt-ico">📁</span>
+        <div class="pt-t">Dokumenty</div>
+        <div class="pt-d">SOP, formuláře, žádosti a operační reporty ke stažení.</div>
+      </a>
+      <a class="ptile" href="#hodnosti">
+        <span class="pt-ico">🏅</span>
+        <div class="pt-t">Hodnosti</div>
+        <div class="pt-d">Hodnostní hierarchie oddělení a podmínky povýšení.</div>
+      </a>
+      <a class="ptile" href="#vedeni">
+        <span class="pt-ico">👥</span>
+        <div class="pt-t">Vedení</div>
+        <div class="pt-d">Hierarchie vedení od Chief po Sergeants — foto, jméno, badge.</div>
+      </a>
+      <a class="ptile" href="#novinky">
+        <span class="pt-ico">📰</span>
+        <div class="pt-t">Novinky</div>
+        <div class="pt-d">Aktuální oznámení, briefingy a zprávy oddělení.</div>
+      </a>
+      <a class="ptile" href="#" onclick="alert('Dispečink bude brzy dostupný.')">
+        <span class="pt-ico">📡</span>
+        <div class="pt-t">Dispečink</div>
+        <div class="pt-d">Radio kanály, 10-kódy a protokol hlídek. Brzy dostupné.</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- HODNOSTI -->
+<section id="hodnosti">
+  <div class="container">
+    <div class="sec-hdr">
+      <div class="sec-tag">🏅 HIERARCHIE</div>
+      <h2 class="sec-title">Hodnosti &amp; <span>Struktura</span></h2>
+      <p class="sec-desc">Kompletní hodnostní žebříček Los Santos Police Department od Recruit po Chief of Police.</p>
+    </div>
+    <div class="rtable-w">
+      <table class="rtable">
+        <thead><tr><th>Hodnost</th><th>Zkratka</th><th>Úroveň</th><th>Popis</th></tr></thead>
+        <tbody>
+          <tr><td><span class="rb r0">⭐⭐⭐⭐ Chief of Police</span></td><td><span class="rn">CoP</span></td><td style="color:var(--gold2);font-weight:700">10</td><td class="rd">Nejvyšší velitel celého oddělení. Zodpovídá za politiku, strategii a vedení LSPD.</td></tr>
+          <tr><td><span class="rb r0">⭐⭐⭐ Deputy Chief</span></td><td><span class="rn">DC</span></td><td style="color:var(--gold2);font-weight:700">9</td><td class="rd">Zástupce Chief. Řídí jednotlivé divize a zastupuje CoP v jeho nepřítomnosti.</td></tr>
+          <tr><td><span class="rb r1">⭐⭐⭐ Commander</span></td><td><span class="rn">CMD</span></td><td style="color:var(--blue2);font-weight:700">8</td><td class="rd">Velitel operační oblasti nebo specializované divize (SWAT, CID, Traffic).</td></tr>
+          <tr><td><span class="rb r1">⭐⭐ Captain</span></td><td><span class="rn">Capt.</span></td><td style="color:var(--blue2);font-weight:700">7</td><td class="rd">Velitel stanice nebo velké operativní skupiny. Schvaluje operační plány.</td></tr>
+          <tr><td><span class="rb r1">⭐⭐ Lieutenant</span></td><td><span class="rn">Lt.</span></td><td style="color:var(--blue2);font-weight:700">6</td><td class="rd">Velí skupině Sergeantů. Zodpovídá za denní provoz a alokaci zdrojů.</td></tr>
+          <tr><td><span class="rb r2">⭐ Sergeant</span></td><td><span class="rn">Sgt.</span></td><td style="font-weight:700">5</td><td class="rd">Velí hlídce nebo skupině. První nadřízený důstojníků. Přiděluje úkoly a hodnotí výkon.</td></tr>
+          <tr><td><span class="rb r2">Corporal</span></td><td><span class="rn">Cpl.</span></td><td style="font-weight:700">4</td><td class="rd">Senior důstojník s mentorovacími povinnostmi. Zastupuje Sgt. v nepřítomnosti.</td></tr>
+          <tr><td><span class="rb r2">Senior Officer</span></td><td><span class="rn">Sr.Off.</span></td><td style="font-weight:700">3</td><td class="rd">Zkušený důstojník. Může pracovat samostatně a mentorovat juniory.</td></tr>
+          <tr><td><span class="rb r3">Officer</span></td><td><span class="rn">Off.</span></td><td style="color:var(--tx2);font-weight:700">2</td><td class="rd">Standardní hlídkový důstojník. Plná práva pro hlídkování, zatčení a provoz MDT.</td></tr>
+          <tr><td><span class="rb r3">Probationary Officer</span></td><td><span class="rn">Prob.</span></td><td style="color:var(--tx3);font-weight:700">1</td><td class="rd">Nový důstojník na zkušební době. Pracuje vždy ve dvojici se starším kolegou.</td></tr>
+          <tr><td><span class="rb r3">Recruit / Cadet</span></td><td><span class="rn">Rec.</span></td><td style="color:var(--tx3);font-weight:700">0</td><td class="rd">Čekatel na vstupu. Absolvuje výcvikový program před povýšením na Probationary.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- VEDENI -->
+<section id="vedeni">
+  <div class="container">
+    <div class="sec-hdr">
+      <div class="sec-tag">👥 VELITELSKÝ SBOR</div>
+      <h2 class="sec-title">Hierarchie <span>Vedení</span></h2>
+      <p class="sec-desc">Struktura velení Los Santos Police Department — od Chief of Police po Sergeants.</p>
+    </div>
+
+    <div class="ldiv">
+      <div class="ldiv-hdr">Vrchní velení</div>
+      <div class="orow">
+        <div class="ocard cmd">
+          <div class="ophoto gold-bg">👮</div>
+          <div class="oinfo">
+            <div class="oname">Robert J. Reynolds</div>
+            <span class="orank gold">⭐⭐⭐⭐ Chief of Police</span>
+            <div class="ometa">
+              <div class="omr"><span class="omk">BADGE</span><span class="omv gold">#001</span></div>
+              <div class="omr"><span class="omk">DIVIZE</span><span class="omv">Vrchní velení</span></div>
+              <div class="omr"><span class="omk">OD ROKU</span><span class="omv">2022</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="ocard cmd">
+          <div class="ophoto gold-bg">👮</div>
+          <div class="oinfo">
+            <div class="oname">Maria L. Sanchez</div>
+            <span class="orank gold">⭐⭐⭐ Deputy Chief</span>
+            <div class="ometa">
+              <div class="omr"><span class="omk">BADGE</span><span class="omv gold">#002</span></div>
+              <div class="omr"><span class="omk">DIVIZE</span><span class="omv">Operace</span></div>
+              <div class="omr"><span class="omk">OD ROKU</span><span class="omv">2023</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ldiv">
+      <div class="ldiv-hdr">Commanders &amp; Captains</div>
+      <div class="orow">
+        <div class="ocard">
+          <div class="ophoto">🧑‍✈️</div>
+          <div class="oinfo">
+            <div class="oname">David K. Morrison</div>
+            <span class="orank">⭐⭐⭐ Commander</span>
+            <div class="ometa">
+              <div class="omr"><span class="omk">BADGE</span><span class="omv blue">#010</span></div>
+              <div class="omr"><span class="omk">DIVIZE</span><span class="omv">SWAT / Taktická</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="ocard">
+          <div class="ophoto">👩‍✈️</div>
+          <div class="oinfo">
+            <div class="oname">Angela R. Foster</div>
+            <span class="orank">⭐⭐ Captain</span>
+            <div class="ometa">
+              <div class="omr"><span class="omk">BADGE</span><span class="omv blue">#020</span></div>
+              <div class="omr"><span class="omk">DIVIZE</span><span class="omv">Stanice Mission Row</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="ocard">
+          <div class="ophoto">🧑‍✈️</div>
+          <div class="oinfo">
+            <div class="oname">Carlos E. Johnson</div>
+            <span class="orank">⭐⭐ Captain</span>
+            <div class="ometa">
+              <div class="omr"><span class="omk">BADGE</span><span class="omv blue">#021</span></div>
+              <div class="omr"><span class="omk">DIVIZE</span><span class="omv">Kriminální</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ldiv">
+      <div class="ldiv-hdr">Lieutenants</div>
+      <div class="orow">
+        <div class="ocard">
+          <div class="ophoto">👮‍♂️</div>
+          <div class="oinfo">
+            <div class="oname">Thomas A. Martinez</div>
+            <span class="orank">⭐ Lieutenant</span>
+            <div class="ometa">
+              <div class="omr"><span class="omk">BADGE</span><span class="omv blue">#050</span></div>
+              <div class="omr"><span class="omk">DIVIZE</span><span class="omv">Hlídka — Sever</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="ocard">
+          <div class="ophoto">👮‍♀️</div>
+          <div class="oinfo">
+            <div class="oname">Rachel N. Kim</div>
+            <span class="orank">⭐ Lieutenant</span>
+            <div class="ometa">
+              <div class="omr"><span class="omk">BADGE</span><span class="omv blue">#051</span></div>
+              <div class="omr"><span class="omk">DIVIZE</span><span class="omv">Hlídka — Jih</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="ocard">
+          <div class="ophoto">👮‍♂️</div>
+          <div class="oinfo">
+            <div class="oname">Brian L. Wallace</div>
+            <span class="orank">⭐ Lieutenant</span>
+            <div class="ometa">
+              <div class="omr"><span class="omk">BADGE</span><span class="omv blue">#052</span></div>
+              <div class="omr"><span class="omk">DIVIZE</span><span class="omv">Dopravní oddělení</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="ocard">
+          <div class="ophoto">👮‍♀️</div>
+          <div class="oinfo">
+            <div class="oname">Diana P. Reyes</div>
+            <span class="orank">⭐ Lieutenant</span>
+            <div class="ometa">
+              <div class="omr"><span class="omk">BADGE</span><span class="omv blue">#053</span></div>
+              <div class="omr"><span class="omk">DIVIZE</span><span class="omv">Vyšetřování</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ldiv">
+      <div class="ldiv-hdr">Sergeants — Velitelé hlídek</div>
+      <div class="orow">
+        <div class="ocard">
+          <div class="ophoto">👮‍♂️</div>
+          <div class="oinfo">
+            <div class="oname">Kevin M. Hayes</div>
+            <span class="orank">Sergeant</span>
+            <div class="ometa">
+              <div class="omr"><span class="omk">BADGE</span><span class="omv blue">#101</span></div>
+              <div class="omr"><span class="omk">HLÍDKA</span><span class="omv">Hlídka C</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="ocard">
+          <div class="ophoto">👮‍♀️</div>
+          <div class="oinfo">
+            <div class="oname">Priya S. Patel</div>
+            <span class="orank">Sergeant</span>
+            <div class="ometa">
+              <div class="omr"><span class="omk">BADGE</span><span class="omv blue">#102</span></div>
+              <div class="omr"><span class="omk">HLÍDKA</span><span class="omv">Hlídka A</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="ocard">
+          <div class="ophoto">👮‍♂️</div>
+          <div class="oinfo">
+            <div class="oname">James T. Okafor</div>
+            <span class="orank">Sergeant</span>
+            <div class="ometa">
+              <div class="omr"><span class="omk">BADGE</span><span class="omv blue">#103</span></div>
+              <div class="omr"><span class="omk">HLÍDKA</span><span class="omv">Hlídka B</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="ocard">
+          <div class="ophoto">👮‍♀️</div>
+          <div class="oinfo">
+            <div class="oname">Aisha T. Johnson</div>
+            <span class="orank">Sergeant</span>
+            <div class="ometa">
+              <div class="omr"><span class="omk">BADGE</span><span class="omv blue">#104</span></div>
+              <div class="omr"><span class="omk">HLÍDKA</span><span class="omv">SWAT / Taktická</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="ocard">
+          <div class="ophoto">👮‍♂️</div>
+          <div class="oinfo">
+            <div class="oname">Ethan R. Brooks</div>
+            <span class="orank">Sergeant</span>
+            <div class="ometa">
+              <div class="omr"><span class="omk">BADGE</span><span class="omv blue">#105</span></div>
+              <div class="omr"><span class="omk">HLÍDKA</span><span class="omv">Kriminální</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="ocard">
+          <div class="ophoto">👮‍♀️</div>
+          <div class="oinfo">
+            <div class="oname">Sofia M. Cruz</div>
+            <span class="orank">Sergeant</span>
+            <div class="ometa">
+              <div class="omr"><span class="omk">BADGE</span><span class="omv blue">#106</span></div>
+              <div class="omr"><span class="omk">HLÍDKA</span><span class="omv">Dopravní</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- DOKUMENTY -->
+<section id="dokumenty">
+  <div class="container">
+    <div class="sec-hdr">
+      <div class="sec-tag">📁 INTERNÍ DOKUMENTY</div>
+      <h2 class="sec-title">Dokumenty &amp; <span>Formuláře</span></h2>
+      <p class="sec-desc">Standardní operační postupy, žádosti, formuláře a výcvikové materiály pro všechny důstojníky.</p>
+    </div>
+    <div class="docs-g">
+      <a class="doc" href="#" onclick="alert('SOP v1.8')"><span class="doc-ico">📋</span><div><div class="doc-name">SOP — Standardní postupy</div><div class="doc-info">Aktualizováno: 20.02.2026 · PDF</div></div><span class="dbadge db-n">NOVÉ</span></a>
+      <a class="doc" href="#" onclick="alert('Incident report formulář')"><span class="doc-ico">📝</span><div><div class="doc-name">Incident Report — formulář</div><div class="doc-info">Šablona · DOCX</div></div><span class="dbadge db-d">DOC</span></a>
+      <a class="doc" href="#" onclick="alert('Žádost o volno')"><span class="doc-ico">📅</span><div><div class="doc-name">Žádost o volno / směnu</div><div class="doc-info">Formulář · PDF</div></div><span class="dbadge db-p">PDF</span></a>
+      <a class="doc" href="#" onclick="alert('Radio kódy')"><span class="doc-ico">📡</span><div><div class="doc-name">Radio kódy a 10-kódy</div><div class="doc-info">Referenční list · PDF</div></div><span class="dbadge db-p">PDF</span></a>
+      <a class="doc" href="#" onclick="alert('Výcvikový program')"><span class="doc-ico">🎓</span><div><div class="doc-name">Výcvikový program Recruit</div><div class="doc-info">Program · PDF</div></div><span class="dbadge db-p">PDF</span></a>
+      <a class="doc" href="#" onclick="alert('Protokol použití síly')"><span class="doc-ico">⚖️</span><div><div class="doc-name">Použití síly — protokol</div><div class="doc-info">Aktualizováno: 15.01.2026</div></div><span class="dbadge db-d">DOC</span></a>
+      <a class="doc" href="#" onclick="alert('Žádost o povýšení')"><span class="doc-ico">🏅</span><div><div class="doc-name">Žádost o povýšení</div><div class="doc-info">Formulář · PDF</div></div><span class="dbadge db-p">PDF</span></a>
+      <a class="doc" href="#" onclick="openMDT()"><span class="doc-ico">📖</span><div><div class="doc-name">Californský trestní zákoník</div><div class="doc-info">Reference · online v MDT</div></div><span class="dbadge db-n">MDT</span></a>
+      <a class="doc" href="#" onclick="alert('Kontaktní seznam vedení')"><span class="doc-ico">📞</span><div><div class="doc-name">Kontakty — vedení LSPD</div><div class="doc-info">Telefonní seznam · PDF</div></div><span class="dbadge db-p">PDF</span></a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-l">LOS SANTOS POLICE DEPARTMENT</div>
+  <div class="foot-r">Interní portál · Pouze pro oprávněné osoby<br>© 2026 LSPD · Mission Row HQ · Los Santos, SA</div>
+</footer>
+
+<!-- MDT MODAL -->
+<div id="mdt-modal">
+  <div class="mbox">
+    <button class="mclose" onclick="closeMDT()">✕</button>
+    <div class="mt">📱 MDT PŘIHLÁŠENÍ</div>
+    <div class="ms">MOBILE DATA TERMINAL · v2.4</div>
+    <div class="mdept">
+      <button id="md0" class="mdl" onclick="selMD('LSPD')">🔵 LSPD</button>
+      <button id="md1" onclick="selMD('LSSD')">🟡 LSSD</button>
+    </div>
+    <div class="mf"><label class="ml">Číslo odznaku (Badge #)</label><input type="text" class="mi" id="mBadge" placeholder="např. 101" maxlength="6" autocomplete="off"></div>
+    <div class="mf"><label class="ml">Heslo</label><input type="password" class="mi" id="mPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')launchMDT()"></div>
+    <button class="mbtn" onclick="launchMDT()">SPUSTIT MDT →</button>
+    <div class="merr" id="mErr"></div>
+    <div class="mhint">Demo: <b>LSPD #101</b> / lspd2026 · <b>LSPD #112</b> / mitchell<br><b>LSSD #201</b> / lssd2026 · <b>LSSD #234</b> / deputy</div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const OFFICERS={LSPD:{'101':'lspd2026','112':'mitchell','134':'okafor','088':'vargas','201':'novak'},LSSD:{'201':'lssd2026','234':'deputy','302':'sheriff','411':'johnson'}};
+let mDept='LSPD';
+
+function openMDT(){document.getElementById('mdt-modal').classList.add('open');setTimeout(()=>document.getElementById('mBadge').focus(),50);}
+function closeMDT(){document.getElementById('mdt-modal').classList.remove('open');document.getElementById('mErr').textContent='';}
+document.getElementById('mdt-modal').addEventListener('click',function(e){if(e.target===this)closeMDT();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMDT();});
+
+function selMD(d){
+  mDept=d;
+  document.getElementById('md0').className=d==='LSPD'?'mdl':'';
+  document.getElementById('md1').className=d==='LSSD'?'mds':'';
+}
+
+function launchMDT(){
+  const b=document.getElementById('mBadge').value.trim();
+  const p=document.getElementById('mPass').value;
+  const e=document.getElementById('mErr');
+  if(!b||!p){e.textContent='Vyplňte číslo odznaku a heslo.';return;}
+  const db=OFFICERS[mDept];
+  if(!db[b]){e.textContent='❌ Badge #'+b+' nenalezeno v '+mDept+'.';return;}
+  if(db[b]!==p){e.textContent='❌ Nesprávné heslo.';return;}
+  e.textContent='';
+  window.open('mdt-lspd-lssd.html','_blank');
+  closeMDT();
+}
+
+/* Smooth scroll with nav offset */
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',function(ev){
+    const t=document.querySelector(this.getAttribute('href'));
+    if(t){ev.preventDefault();window.scrollTo({top:t.offsetTop-68,behavior:'smooth'});}
+  });
+});
+
+/* Nav highlight */
+const secs=document.querySelectorAll('section[id]');
+const nls=document.querySelectorAll('.nav-link');
+new IntersectionObserver(entries=>{
+  entries.forEach(en=>{
+    if(en.isIntersecting)nls.forEach(l=>l.classList.toggle('active',l.getAttribute('href')==='#'+en.target.id));
+  });
+},{threshold:.35,rootMargin:'-60px 0px 0px 0px'}).observe&&secs.forEach(s=>new IntersectionObserver(entries=>{
+  entries.forEach(en=>{if(en.isIntersecting)nls.forEach(l=>l.classList.toggle('active',l.getAttribute('href')==='#'+en.target.id));});
+},{threshold:.35,rootMargin:'-60px 0px 0px 0px'}).observe(s));
+</script>
+</body>
+</html>
